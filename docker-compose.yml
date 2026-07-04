@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+
+  equipment-db:
+    image: postgres:16
+    container_name: equipment-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: equipment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - equipment_data:/var/lib/postgresql/data
+
+  maintenance-db:
+    image: postgres:16
+    container_name: maintenance-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: maintenance_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - maintenance_data:/var/lib/postgresql/data
+
+  equipment-service:
+    build:
+      context: ./EquipmentService
+    container_name: equipment-service
+    restart: unless-stopped
+    depends_on:
+      - equipment-db
+    ports:
+      - "8081:8081"
+
+  maintenance-service:
+    build:
+      context: ./MaintenanceService
+    container_name: maintenance-service
+    restart: unless-stopped
+    depends_on:
+      - maintenance-db
+      - equipment-service
+    ports:
+      - "8082:8082"
+
+volumes:
+  equipment_data:
+  maintenance_data:
