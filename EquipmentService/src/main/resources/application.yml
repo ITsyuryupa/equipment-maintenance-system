@@ -1,0 +1,22 @@
+spring:
+
+  application:
+    name: equipment-service
+
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/equipment_db
+    username: postgres
+    password: postgres
+
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+
+server:
+  port: 8081
+
+maintenance-service:
+  url: http://localhost:8082

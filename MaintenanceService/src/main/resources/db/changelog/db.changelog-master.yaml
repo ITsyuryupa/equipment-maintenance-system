@@ -1,0 +1,14 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 001-create-equipment-tables
+      author: developer
+      changes:
+        - sqlFile:
+            path: db/changelog/migrations/001-create-maintenance-tables.sql
+  - changeSet:
+      id: 002-seed-service-requests
+      author: Tsurupa
+      changes:
+        - sqlFile:
+            path: db/changelog/migrations/002-seed-service-requests.sql

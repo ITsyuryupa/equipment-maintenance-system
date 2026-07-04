@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://equipment-db:5432/equipment_db
+
+maintenance-service:
+  url: http://maintenance-service:8082

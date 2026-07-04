@@ -1,0 +1,14 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 001-create-equipment-tables
+      author: Tsurupa
+      changes:
+        - sqlFile:
+            path: db/changelog/migrations/001-create-equipment-tables.sql
+  - changeSet:
+      id: 002-seed-data
+      author: Tsurupa
+      changes:
+        - sqlFile:
+            path: db/changelog/migrations/002-seed-data.sql
