@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/internal/equipment")
 @RequiredArgsConstructor
-//@Hidden
+@Hidden
 public class InternalEquipmentController {
 
     private final EquipmentService equipmentService;
