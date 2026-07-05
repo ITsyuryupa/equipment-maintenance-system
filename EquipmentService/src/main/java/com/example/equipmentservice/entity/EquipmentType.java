@@ -2,8 +2,6 @@ package com.example.equipmentservice.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Data
@@ -30,5 +28,8 @@ public class EquipmentType {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private Boolean deleted = false;
 
 }

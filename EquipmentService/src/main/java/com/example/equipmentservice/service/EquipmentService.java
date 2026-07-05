@@ -6,6 +6,7 @@ import com.example.equipmentservice.dto.UpdateEquipmentDto;
 import com.example.equipmentservice.entity.EquipmentStatus;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface EquipmentService {
 
@@ -20,4 +21,5 @@ public interface EquipmentService {
     void delete(Long id);
 
     void changeStatus(Long id, EquipmentStatus dto);
+
 }

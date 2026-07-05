@@ -13,18 +13,18 @@ import java.util.Optional;
 public interface ServiceRequestRepository
         extends JpaRepository<ServiceRequest, Long> {
 
-    List<ServiceRequest> findByStatus(ServiceRequestStatus status);
+    List<ServiceRequest> findByStatusAndDeletedFalse(ServiceRequestStatus status);
 
-    List<ServiceRequest> findByPriority(Priority priority);
+    List<ServiceRequest> findByPriorityAndDeletedFalse(Priority priority);
 
-    List<ServiceRequest> findByEquipmentId(Long equipmentId);
+    List<ServiceRequest> findByEquipmentIdAndDeletedFalse(Long equipmentId);
 
-    List<ServiceRequest> findByStatusAndPriority(
+    List<ServiceRequest> findByStatusAndPriorityAndDeletedFalse(
             ServiceRequestStatus status,
             Priority priority
     );
 
-    boolean existsByEquipmentIdAndStatusIn(
+    boolean existsByEquipmentIdAndStatusInAndDeletedFalse(
             Long equipmentId,
             List<ServiceRequestStatus> statuses
     );
@@ -42,5 +42,10 @@ public interface ServiceRequestRepository
 
     Optional<ServiceRequest> findByIdAndDeletedFalse(Long id);
 
-    List<ServiceRequest> findAllByDeletedFalse();
+    @Query(value = """
+            SELECT *
+            FROM maintenance.service_request
+            WHERE deleted = false
+            """, nativeQuery = true)
+    List<ServiceRequest> findAllAndDeletedFalse();
 }

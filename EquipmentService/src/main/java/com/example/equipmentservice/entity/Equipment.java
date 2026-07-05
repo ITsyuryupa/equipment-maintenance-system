@@ -37,4 +37,7 @@ public class Equipment {
     @Column(name = "decommissioned_at")
     private LocalDateTime decommissionedAt;
 
+    @Column(nullable = false)
+    private Boolean deleted = false;
+
 }

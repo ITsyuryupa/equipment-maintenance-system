@@ -27,9 +27,9 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     public ServiceFullRequestResponse create(CreateServiceRequestDto dto) {
 
         EquipmentResponse equipment =
-                equipmentClient.getEquipment(dto.getEquipmentId());
+                equipmentClient.getEquipment(dto.getEquipmentId()); //todo поменять получения удаленных
 
-        if (equipment.getStatus().equals(EquipmentStatus.DECOMMISSIONED.toString())) {
+        if (equipment.getStatus().equals(EquipmentStatus.DECOMMISSIONED)) {
             throw new BusinessException(
                     "Нельзя создать заявку на списанное оборудование"
             );
@@ -68,7 +68,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     @Override
     public ServiceRequestResponseDto findById(Long id) {
 
-        ServiceRequest request = repository.findById(id)
+        ServiceRequest request = repository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundException("Заявка не найдена"));
 
         ServiceRequestResponseDto response = new ServiceRequestResponseDto();
@@ -89,7 +89,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     @Override
     public List<ServiceRequestResponseDto> findAll() {
 
-        return repository.findAll()
+        return repository.findAllAndDeletedFalse()
                 .stream()
                 .map(request -> {
                     ServiceRequestResponseDto response = new ServiceRequestResponseDto();
@@ -112,7 +112,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     @Override
     public ServiceRequestResponseDto update(Long id, UpdateServiceRequestDto dto) {
 
-        ServiceRequest request = repository.findById(id)
+        ServiceRequest request = repository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundException("Заявка не найдена"));
 
         if (request.getStatus() == ServiceRequestStatus.DONE) {
@@ -142,7 +142,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     @Override
     public void delete(Long id) {
 
-        ServiceRequest request = repository.findById(id)
+        ServiceRequest request = repository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundException("Заявка не найдена"));
 
         if (request.getStatus() == ServiceRequestStatus.IN_PROGRESS) {
@@ -150,14 +150,14 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
                     "Нельзя удалить заявку в работе"
             );
         }
-
-        repository.delete(request);
+        request.setDeleted(true);
+        repository.save(request);
     }
 
     @Override
     public ServiceRequestResponseDto changeStatus(Long id, ServiceRequestStatus status) {
 
-        ServiceRequest request = repository.findById(id)
+        ServiceRequest request = repository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundException("Заявка не найдена"));
 
         if (request.getStatus() == ServiceRequestStatus.DONE
@@ -210,15 +210,15 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         List<ServiceRequest> requests;
 
         if (status != null && priority != null) {
-            requests = repository.findByStatusAndPriority(status, priority);
+            requests = repository.findByStatusAndPriorityAndDeletedFalse(status, priority);
         } else if (status != null) {
-            requests = repository.findByStatus(status);
+            requests = repository.findByStatusAndDeletedFalse(status);
         } else if (priority != null) {
-            requests = repository.findByPriority(priority);
+            requests = repository.findByPriorityAndDeletedFalse(priority);
         } else if (equipmentId != null) {
-            requests = repository.findByEquipmentId(equipmentId);
+            requests = repository.findByEquipmentIdAndDeletedFalse(equipmentId);
         } else {
-            requests = repository.findAll();
+            requests = repository.findAllAndDeletedFalse();
         }
 
         return requests.stream()
@@ -242,14 +242,6 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
 
     @Override
     public boolean hasActiveRequests(Long equipmentId) {
-
-//        return repository.existsByEquipmentIdAndStatusIn(
-//                equipmentId,
-//                List.of(
-//                        ServiceRequestStatus.NEW,
-//                        ServiceRequestStatus.IN_PROGRESS
-//                )
-//        );
 
         return repository.hasActiveRequests(equipmentId);
 

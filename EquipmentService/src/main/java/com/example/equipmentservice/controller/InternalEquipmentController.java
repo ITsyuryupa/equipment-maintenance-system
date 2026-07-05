@@ -26,7 +26,6 @@ public class InternalEquipmentController {
     @PatchMapping("/{id}/status")
     public void changeStatus(@PathVariable Long id,
                              @RequestParam @Valid EquipmentStatus status) {
-
         equipmentService.changeStatus(id, status);
     }
 

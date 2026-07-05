@@ -2,6 +2,7 @@ package com.example.equipmentservice.dto;
 
 import com.example.equipmentservice.entity.EquipmentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -65,5 +66,12 @@ public class EquipmentResponse {
             nullable = true
     )
     private LocalDateTime decommissionedAt;
+
+    @Schema(
+            description = "Флаг удаления сущности для soft-delete",
+            example = "false"
+    )
+    @Column(nullable = false)
+    private Boolean deleted = false;
 
 }

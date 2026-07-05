@@ -28,11 +28,11 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Override
     public EquipmentResponse create(CreateEquipmentDto dto) {
 
-        if (!equipmentTypeRepository.existsById(dto.getEquipmentTypeId())) {
+        if (!equipmentTypeRepository.existsByIdAndDeletedFalse(dto.getEquipmentTypeId())) {
             throw new BusinessException("Тип оборудования не найден");
         }
 
-        if (equipmentRepository.existsByInventoryNumber(dto.getInventoryNumber())) {
+        if (equipmentRepository.existsByInventoryNumberAndDeletedFalse(dto.getInventoryNumber())) {
             throw new BusinessException("Инвентарный номер уже существует");
         }
 
@@ -53,7 +53,7 @@ public class EquipmentServiceImpl implements EquipmentService {
 
     private EquipmentResponse toResponse(Equipment equipment) {
 
-        EquipmentType equipmentType = equipmentTypeRepository.findById(equipment.getEquipmentTypeId())
+        EquipmentType equipmentType = equipmentTypeRepository.findByIdAndDeletedFalse(equipment.getEquipmentTypeId())
                 .orElseThrow(() -> new BusinessException("Тип оборудования не найден"));
 
         EquipmentTypeResponse typeResponse = new EquipmentTypeResponse();
@@ -86,9 +86,9 @@ public class EquipmentServiceImpl implements EquipmentService {
         List<Equipment> equipment;
 
         if (equipmentTypeId == null) {
-            equipment = equipmentRepository.findAll();
+            equipment = equipmentRepository.findAllAndDeletedFalse();
         } else {
-            equipment = equipmentRepository.findByEquipmentTypeId(equipmentTypeId);
+            equipment = equipmentRepository.findByEquipmentTypeIdAndDeletedFalse(equipmentTypeId);
         }
 
         return equipment.stream()
@@ -99,7 +99,7 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Override
     public EquipmentResponse findById(Long id) {
 
-        Equipment equipment = equipmentRepository.findById(id)
+        Equipment equipment = equipmentRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() ->
                         new BusinessException("Оборудование не найдено"));
 
@@ -109,16 +109,16 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Override
     public EquipmentResponse update(Long id, UpdateEquipmentDto dto) {
 
-        Equipment equipment = equipmentRepository.findById(id)
+        Equipment equipment = equipmentRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() ->
                         new BusinessException("Оборудование не найдено"));
 
-        if (!equipmentTypeRepository.existsById(dto.getEquipmentTypeId())) {
+        if (!equipmentTypeRepository.existsByIdAndDeletedFalse(dto.getEquipmentTypeId())) {
             throw new BusinessException("Тип оборудования не найден");
         }
 
         Optional<Equipment> equipmentWithInventory =
-                equipmentRepository.findByInventoryNumber(dto.getInventoryNumber());
+                equipmentRepository.findByInventoryNumberAndDeletedFalse(dto.getInventoryNumber());
 
         if (equipmentWithInventory.isPresent()
                 && !equipmentWithInventory.get().getId().equals(id)) {
@@ -154,13 +154,12 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Override
     public void changeStatus(Long id, EquipmentStatus status) {
 
-        Equipment equipment = equipmentRepository.findById(id)
+        Equipment equipment = equipmentRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() ->
                         new BusinessException("Оборудование не найдено"));
 
         if (equipment.getStatus() == EquipmentStatus.UNDER_MAINTENANCE
                 && status == EquipmentStatus.DECOMMISSIONED) {
-
             throw new BusinessException(
                     "Нельзя списать оборудование, находящееся на обслуживании");
         }
@@ -179,7 +178,7 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Override
     public void delete(Long id) {
 
-        Equipment equipment = equipmentRepository.findById(id)
+        Equipment equipment = equipmentRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() ->
                         new BusinessException("Оборудование не найдено"));
 
@@ -188,7 +187,8 @@ public class EquipmentServiceImpl implements EquipmentService {
                     "Нельзя удалить оборудование, по которому есть активные заявки");
         }
 
-        equipmentRepository.delete(equipment);
+        equipment.setDeleted(true);
+        equipmentRepository.save(equipment);
     }
 
 }

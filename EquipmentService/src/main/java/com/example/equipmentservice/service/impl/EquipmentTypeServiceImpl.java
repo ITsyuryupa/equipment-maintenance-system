@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class EquipmentTypeServiceImpl implements EquipmentTypeService {
     @Override
     public EquipmentTypeResponse create(CreateEquipmentTypeDto dto) {
 
-        if (equipmentTypeRepository.existsByName(dto.getName())) {
+        if (equipmentTypeRepository.existsByNameAndDeletedFalse(dto.getName())) {
             throw new BusinessException("Тип оборудования уже существует");
         }
 
@@ -46,7 +47,7 @@ public class EquipmentTypeServiceImpl implements EquipmentTypeService {
     @Override
     public List<EquipmentTypeResponse> findAll() {
 
-        return equipmentTypeRepository.findAll()
+        return equipmentTypeRepository.findAllAndDeletedFalse()
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -55,7 +56,7 @@ public class EquipmentTypeServiceImpl implements EquipmentTypeService {
     @Override
     public EquipmentTypeResponse findById(Long id) {
 
-        EquipmentType equipmentType = equipmentTypeRepository.findById(id)
+        EquipmentType equipmentType = equipmentTypeRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() ->
                         new BusinessException("Тип оборудования не найден"));
 
@@ -65,12 +66,12 @@ public class EquipmentTypeServiceImpl implements EquipmentTypeService {
     @Override
     public EquipmentTypeResponse update(Long id, UpdateEquipmentTypeDto dto) {
 
-        EquipmentType equipmentType = equipmentTypeRepository.findById(id)
+        EquipmentType equipmentType = equipmentTypeRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() ->
                         new BusinessException("Тип оборудования не найден"));
 
         if (!equipmentType.getName().equals(dto.getName())
-                && equipmentTypeRepository.existsByName(dto.getName())) {
+                && equipmentTypeRepository.existsByNameAndDeletedFalse(dto.getName())) {
 
             throw new BusinessException("Тип оборудования уже существует");
         }
@@ -89,18 +90,18 @@ public class EquipmentTypeServiceImpl implements EquipmentTypeService {
 
     @Override
     public void delete(Long id) {
-
-        if (!equipmentTypeRepository.existsById(id)) {
+        Optional<EquipmentType> equipmentType = equipmentTypeRepository.findByIdAndDeletedFalse(id);
+        if (!equipmentType.isPresent()) {
             throw new BusinessException("Тип оборудования не найден");
         }
 
-        if (equipmentRepository.existsByEquipmentTypeId(id)) {
+        if (equipmentRepository.existsByEquipmentTypeIdAndDeletedFalse(id)) {
             throw new BusinessException(
                     "Нельзя удалить тип оборудования, к которому привязано оборудование"
             );
         }
-
-        equipmentTypeRepository.deleteById(id);
+        equipmentType.get().setDeleted(true);
+        equipmentTypeRepository.save(equipmentType.get());
     }
 
 
